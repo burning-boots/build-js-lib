@@ -1,0 +1,141 @@
+﻿<?xml version="1.0"?>
+
+<!--       Burning Boots        -->
+<!-- Please use a tab size of 2 -->
+
+<!DOCTYPE project>
+<project name="burning-boots-js-lib-build" default="all" basedir=".">
+	<description>
+A build process for a Javascript library.
+This should be included inside the individual javascript build.xml files.
+	</description>
+
+	<!-- Test the Ant Version -->
+	<property name="burning-boots-js-lib-build.required-ant-version" value="1.8.2"/>
+	<script language="javascript">
+		<![CDATA[
+			var current		= project.getProperty("ant.version").match(/([0-9](\.)?)+/)[0].replace(/\./g,"");
+			var required	= project.getProperty("burning-boots-js-lib-build.required-ant-version").match(/([0-9](\.)?)+/)[0].replace(/\./g,"");
+			project.setProperty('ant.valid-version', current < required ? "false" : "true");
+		]]>
+	</script>
+	<fail message="This build requires Ant version ${burning-boots-js-lib-build.required-ant-version}.">
+		<condition>
+			<isfalse value="${ant.valid-version}"/>
+		</condition>
+	</fail>
+
+	<!-- Store this base dir -->
+	<dirname property="burning-boots-js-lib-build.basedir" file="${ant.file.burning-boots-js-lib-build}"/>
+
+	<!-- Store the project base dir -->
+	<dirname property="ant.project.basedir" file="${ant.file}"/>
+
+	<!-- load shell environment -->
+	<property environment="env"/>
+
+	<!-- Load in the default properties -->
+	<property file="${burning-boots-js-lib-build.basedir}/config/default.properties"/>
+
+	<!-- Pull in the tool properties from the tools directory -->
+	<property name="bb.tools.dir" value="${env.BURNING_BOOTS_TOOLS_DIR}"/>
+	<fail message="bb.tools.dir was set to '${bb.tools.dir}', 'tools.xml' could not be found. You must set the to the Burning Boots tools directory either by overriding 'bb.tools.dir' or exporting 'BURNING_BOOT_TOOLS_DIR' in your environment.">
+		<condition>
+			<not>
+				<available file="${bb.tools.dir}/tools.xml"/>
+			</not>
+		</condition>
+	</fail>
+	<import file="${bb.tools.dir}/tools.xml"/>
+
+	<!-- Load in Ant-Contrib to give us access to some very useful tasks! -->
+	<taskdef resource="net/sf/antcontrib/antlib.xml">
+		<classpath>
+			<pathelement location="${bb.tools.apache.ant.ant-contrib.jar}"/>
+		</classpath>
+	</taskdef>
+
+	<!-- Standard targets (clean, all, install) -->
+	<target name="all" description="Complete build" depends="doc,compile,test">
+	</target>
+	<target name="clean" description="Cleans a build" depends="doc-clean,compile-clean,test-clean">
+	</target>
+	<target name="install" depends="all" description="Performs an installation">
+	</target>
+
+	<!-- Target for gitignore -->
+	<target name="gitignore">
+		<property name="git.ignore.file" value="${ant.project.basedir}/.gitignore"/>
+		<if>
+			<not>
+				<available file="${git.ignore.file}"/>
+			</not>
+			<then>
+				<echo file="${git.ignore.file}"># Burning Boots${line.separator}# Please use a tab size of 8${line.separator}${line.separator}</echo>
+			</then>
+		</if>
+		<loadfile srcfile="${git.ignore.file}" property="git.ignore"/>
+	</target>
+
+	<!-- Targets for doc -->
+	<target name="doc" description="Builds documentation" depends="gitignore">
+
+		<!-- Make sure there is a documentation directory -->
+		<mkdir dir="${dir.doc}"/>
+
+		<!-- Make sure the documentation directory is added to .gitignore -->
+		<property name="git.ignore.doc.string"># The documentation directory${line.separator}${dir.doc}${line.separator}${line.separator}</property>
+		<if>
+			<not>
+				<contains string="${git.ignore}" substring="${git.ignore.doc.string}"/>
+			</not>
+			<then>
+				<echo file="${git.ignore.file}" append="true">${git.ignore.doc.string}</echo>
+			</then>
+		</if>
+
+		<!-- Build the javascript documentation -->
+		<echo>Building Javascript Documentation</echo>
+		<taskdef name="jsdoctoolkit" classname="uk.co.darrenhurley.ant.tasks.JsDocToolkit" classpath="${bb.tools.jsdoc.ant.jar};${bb.tools.rhino.jar}"/>
+<!--		<jsdoctoolkit jsdochome="${bb.tools.jsdoc.dir}/"
+		              template="sunny"
+		              outputdir="${ant.project.basedir}/${dir.doc}/js/"
+		              inputdir="${ant.project.basedir}/${dir.js}"/>-->
+		<exec executable="java" failonerror="true">
+			<arg value="-jar"/>
+			<arg path="${bb.tools.jsdoc.jar}"/>
+			<arg path="${bb.tools.jsdoc.app.runjs}"/>
+			<arg value="-d=${ant.project.basedir}/${dir.doc}/js"/>
+			<arg value="-t=${bb.tools.jsdoc.template.dir}"/>
+			<arg value="-r"/>
+			<arg value="-q"/>
+			<arg path="${ant.project.basedir}"/>
+		</exec>
+		<echo>Javascript Documentation Complete</echo>
+	</target>
+
+	<target name="doc-clean">
+		<delete dir="${dir.doc}"/>
+	</target>
+
+	<!-- Targets for compile -->
+	<target name="compile" description="Compiles files" depends="sca">
+	</target>
+
+	<target name="compile-clean" depends="sca-clean">
+	</target>
+
+	<!-- Targets for sca -->
+	<target name="sca" description="Performs static code analysis">
+	</target>
+
+	<target name="sca-clean">
+	</target>
+
+	<!-- Targets for test -->
+	<target name="test" description="Runs unit tests" depends="compile">
+	</target>
+
+	<target name="test-clean" depends="compile-clean">
+	</target>
+</project>
