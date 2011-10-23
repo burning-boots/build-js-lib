@@ -81,6 +81,12 @@ This should be included inside the individual javascript build.xml files.
 			<os family="unix" />
 		</condition>
 		<exec executable="${bb.tools.git.exe}">
+			<arg value="commit"/>
+			<arg value="-a"/>
+			<arg value="-m"/>
+			<arg value="'Version ${burning-boots-js-lib-build.lib-version}'"/>
+		</exec>
+		<exec executable="${bb.tools.git.exe}">
 			<arg value="tag"/>
 			<arg value="-a"/>
 			<arg value="v${burning-boots-js-lib-build.lib-version}"/>
