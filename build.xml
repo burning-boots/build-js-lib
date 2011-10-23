@@ -62,6 +62,32 @@ This should be included inside the individual javascript build.xml files.
 	</target>
 	<target name="install" depends="all" description="Performs an installation">
 	</target>
+	<target name="release" description="Performs an GIT release">
+		<fail message="You must set burning-boots-js-lib-build.lib-version.  This can be done automatically by getting the version string from the Javascript library in your projects build.xml">
+			<condition>
+				<not>
+					<isset property="burning-boots-js-lib-build.lib-version"/>
+				</not>
+			</condition>
+		</fail>
+		<!-- For Linux -->
+		<exec executable="/bin/bash" os="Linux">
+			<arg value="/usr/local/bin/git-changelog"/>
+		</exec>
+		<replace file="History.md" token="\n" value="${line.separator}"/>
+		<replace file="History.md" token="n.n.n" value="v${burning-boots-js-lib-build.lib-version}"/>
+		<!-- This should be set by the tools -->
+		<condition property="bb.tools.git.exe" value="/usr/bin/git">
+			<os family="unix" />
+		</condition>
+		<exec executable="${bb.tools.git.exe}">
+			<arg value="tag"/>
+			<arg value="-a"/>
+			<arg value="v${burning-boots-js-lib-build.lib-version}"/>
+			<arg value="-m"/>
+			<arg value="'Version ${burning-boots-js-lib-build.lib-version}'"/>
+		</exec>
+	</target>
 
 	<!-- Target for gitignore -->
 	<target name="gitignore">
