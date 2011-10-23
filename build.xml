@@ -84,7 +84,7 @@ This should be included inside the individual javascript build.xml files.
 			<arg value="commit"/>
 			<arg value="-a"/>
 			<arg value="-m"/>
-			<arg value="'Version ${burning-boots-js-lib-build.lib-version}'"/>
+			<arg value="Version ${burning-boots-js-lib-build.lib-version}"/>
 		</exec>
 		<exec executable="${bb.tools.git.exe}">
 			<arg value="tag"/>
